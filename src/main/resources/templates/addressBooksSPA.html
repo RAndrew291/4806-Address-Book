@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en-CA">
+<html lang="en-CA">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Address Book - Progressive SPA</title>
+    <title>Address Book SPA</title>
     <style>
         * {
             margin: 0;
@@ -170,7 +170,7 @@
         }
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr auto;
             gap: 15px;
             align-items: end;
         }
@@ -178,22 +178,6 @@
             text-align: center;
             padding: 20px;
             color: #667eea;
-        }
-        .nav-links {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        .nav-links a:hover {
-            background: rgba(255,255,255,0.3);
         }
         @media (max-width: 768px) {
             .main-content {
@@ -207,21 +191,16 @@
 </head>
 <body>
 <div class="container">
-    <h1>📒 Address Book Manager (Progressive SPA)</h1>
-
-    <div class="nav-links">
-        <a href="/view/addressBooks">Traditional View</a>
-        <a href="/view/spa">SPA Version</a>
-    </div>
+    <h1>📒 Address Book Manager</h1>
 
     <div class="main-content">
         <!-- Left Panel: Address Books List -->
         <div class="panel">
             <h2>Address Books</h2>
-            <form id="createBookForm" action="/addressBooks" method="post">
+            <form id="createBookForm">
                 <div class="form-group">
                     <label for="bookName">New Address Book:</label>
-                    <input type="text" id="bookName" name="name" placeholder="Enter name" required>
+                    <input type="text" id="bookName" placeholder="Enter name" required>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Create Address Book</button>
             </form>
@@ -242,86 +221,76 @@
 </div>
 
 <script>
-    // Progressive enhancement - only runs if JavaScript is enabled
-    (function() {
-        'use strict';
+    // State management
+    let currentAddressBook = null;
+    let addressBooks = [];
 
-        // State management
-        let currentAddressBook = null;
-        let addressBooks = [];
-        let jsEnabled = false;
+    // API base URL
+    const API_BASE = '/addressBooks';
 
-        // API base URL
-        const API_BASE = '/addressBooks';
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAddressBooks();
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            jsEnabled = true;
-            loadAddressBooks();
+        // Setup event listeners
+        document.getElementById('createBookForm').addEventListener('submit', handleCreateBook);
+    });
 
-            // Enhance the create form to use AJAX
-            const createForm = document.getElementById('createBookForm');
-            createForm.addEventListener('submit', function(e) {
-                e.preventDefault(); // Prevent traditional form submission
-                handleCreateBook(e);
-            });
-        });
+    // Fetch all address books
+    async function loadAddressBooks() {
+        try {
+            const response = await fetch(API_BASE);
+            addressBooks = await response.json();
+            renderAddressBooksList();
+        } catch (error) {
+            console.error('Error loading address books:', error);
+            document.getElementById('addressBooksList').innerHTML =
+                '<div class="empty-state">Error loading address books</div>';
+        }
+    }
 
-        // Fetch all address books
-        async function loadAddressBooks() {
-            try {
-                const response = await fetch(API_BASE);
-                const data = await response.json();
-                addressBooks = Array.isArray(data) ? data : (data._embedded?.addressBooks || []);
-                renderAddressBooksList();
-            } catch (error) {
-                console.error('Error loading address books:', error);
-                document.getElementById('addressBooksList').innerHTML =
-                    '<div class="empty-state">Error loading address books</div>';
-            }
+    // Render the list of address books
+    function renderAddressBooksList() {
+        const container = document.getElementById('addressBooksList');
+
+        if (addressBooks.length === 0) {
+            container.innerHTML = '<div class="empty-state">No address books yet</div>';
+            return;
         }
 
-        // Render the list of address books
-        function renderAddressBooksList() {
-            const container = document.getElementById('addressBooksList');
-
-            if (addressBooks.length === 0) {
-                container.innerHTML = '<div class="empty-state">No address books yet</div>';
-                return;
-            }
-
-            container.innerHTML = '<ul class="address-book-list">' +
-                addressBooks.map(book => `
+        container.innerHTML = '<ul class="address-book-list">' +
+            addressBooks.map(book => `
                     <li class="address-book-item ${currentAddressBook && currentAddressBook.name === book.name ? 'active' : ''}"
-                        onclick="selectAddressBook('${escapeHtml(book.name)}')">
-                        <h3>${escapeHtml(book.name)}</h3>
-                        <small>${book.bookSize || book.contacts?.length || 0} contacts</small>
+                        onclick="selectAddressBook('${book.name}')">
+                        <h3>${book.name}</h3>
+                        <small>${book.bookSize || 0} contacts</small>
                     </li>
                 `).join('') +
-                '</ul>';
+            '</ul>';
+    }
+
+    // Select and display an address book
+    async function selectAddressBook(name) {
+        try {
+            const response = await fetch(`${API_BASE}/${name}`);
+            currentAddressBook = await response.json();
+            renderAddressBookDetail();
+            renderAddressBooksList(); // Refresh to update active state
+        } catch (error) {
+            console.error('Error loading address book:', error);
+            alert('Error loading address book details');
         }
+    }
 
-        // Select and display an address book
-        window.selectAddressBook = async function(name) {
-            try {
-                const response = await fetch(`${API_BASE}/${encodeURIComponent(name)}`);
-                currentAddressBook = await response.json();
-                renderAddressBookDetail();
-                renderAddressBooksList();
-            } catch (error) {
-                console.error('Error loading address book:', error);
-                alert('Error loading address book details');
-            }
-        };
+    // Render the selected address book details
+    function renderAddressBookDetail() {
+        const detailView = document.getElementById('detailView');
 
-        // Render the selected address book details
-        function renderAddressBookDetail() {
-            const detailView = document.getElementById('detailView');
-            const contacts = currentAddressBook.contacts || [];
+        const contacts = currentAddressBook.contacts || [];
 
-            let html = `
-                <h2>${escapeHtml(currentAddressBook.name)}</h2>
-                <button class="btn btn-danger" onclick="deleteAddressBook('${escapeHtml(currentAddressBook.name)}')"
+        let html = `
+                <h2>${currentAddressBook.name}</h2>
+                <button class="btn btn-danger" onclick="deleteAddressBook('${currentAddressBook.name}')"
                         style="float: right; margin-top: -40px;">Delete Book</button>
 
                 <form id="contactForm">
@@ -335,10 +304,6 @@
                             <label for="contactPhone">Phone:</label>
                             <input type="text" id="contactPhone" placeholder="Enter phone" required>
                         </div>
-                        <div class="form-group">
-                            <label for="contactAddress">Address:</label>
-                            <input type="text" id="contactAddress" placeholder="Enter address">
-                        </div>
                         <button type="submit" class="btn btn-success">Add Contact</button>
                     </div>
                 </form>
@@ -346,28 +311,26 @@
                 <h3>Contacts (${contacts.length})</h3>
             `;
 
-            if (contacts.length === 0) {
-                html += '<div class="empty-state">No contacts yet. Add your first contact above!</div>';
-            } else {
-                html += `
+        if (contacts.length === 0) {
+            html += '<div class="empty-state">No contacts yet. Add your first contact above!</div>';
+        } else {
+            html += `
                     <table class="contacts-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Phone</th>
-                                <th>Address</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${contacts.map(contact => `
                                 <tr>
-                                    <td>${escapeHtml(contact.name)}</td>
-                                    <td>${escapeHtml(contact.phone)}</td>
-                                    <td>${escapeHtml(contact.address || '')}</td>
+                                    <td>${contact.name}</td>
+                                    <td>${contact.phone}</td>
                                     <td>
                                         <button class="btn btn-danger"
-                                                onclick="deleteContact('${escapeHtml(currentAddressBook.name)}', '${escapeHtml(contact.phone)}')">
+                                                onclick="deleteContact('${currentAddressBook.name}', '${contact.phone}')">
                                             Delete
                                         </button>
                                     </td>
@@ -376,137 +339,129 @@
                         </tbody>
                     </table>
                 `;
-            }
-
-            detailView.innerHTML = html;
-
-            // Setup form event listener
-            document.getElementById('contactForm').addEventListener('submit', handleAddContact);
         }
 
-        // Handle creating a new address book (AJAX)
-        async function handleCreateBook(e) {
-            const nameInput = document.getElementById('bookName');
-            const name = nameInput.value.trim();
+        detailView.innerHTML = html;
 
-            if (!name) return;
+        // Setup form event listener
+        document.getElementById('contactForm').addEventListener('submit', handleAddContact);
+    }
 
-            try {
-                const response = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name: name })
-                });
+    // Handle creating a new address book
+    async function handleCreateBook(e) {
+        e.preventDefault();
 
-                if (response.ok) {
-                    nameInput.value = '';
-                    await loadAddressBooks();
-                    alert('Address book created successfully!');
-                } else {
-                    alert('Error creating address book');
-                }
-            } catch (error) {
-                console.error('Error creating address book:', error);
+        const nameInput = document.getElementById('bookName');
+        const name = nameInput.value.trim();
+
+        if (!name) return;
+
+        try {
+            const response = await fetch(API_BASE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: name })
+            });
+
+            if (response.ok) {
+                nameInput.value = '';
+                await loadAddressBooks();
+                alert('Address book created successfully!');
+            } else {
                 alert('Error creating address book');
             }
+        } catch (error) {
+            console.error('Error creating address book:', error);
+            alert('Error creating address book');
         }
+    }
 
-        // Handle adding a contact (AJAX)
-        async function handleAddContact(e) {
-            e.preventDefault();
+    // Handle adding a contact
+    async function handleAddContact(e) {
+        e.preventDefault();
 
-            const name = document.getElementById('contactName').value.trim();
-            const phone = document.getElementById('contactPhone').value.trim();
-            const address = document.getElementById('contactAddress').value.trim();
+        const name = document.getElementById('contactName').value.trim();
+        const phone = document.getElementById('contactPhone').value.trim();
 
-            if (!name || !phone) return;
+        if (!name || !phone) return;
 
-            try {
-                const response = await fetch(`${API_BASE}/${encodeURIComponent(currentAddressBook.name)}/contacts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name: name, phone: phone, address: address })
-                });
+        try {
+            const response = await fetch(`${API_BASE}/${currentAddressBook.name}/contacts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: name, phone: phone })
+            });
 
-                if (response.ok) {
-                    document.getElementById('contactName').value = '';
-                    document.getElementById('contactPhone').value = '';
-                    document.getElementById('contactAddress').value = '';
-                    await selectAddressBook(currentAddressBook.name);
-                    await loadAddressBooks();
-                } else {
-                    alert('Error adding contact');
-                }
-            } catch (error) {
-                console.error('Error adding contact:', error);
+            if (response.ok) {
+                document.getElementById('contactName').value = '';
+                document.getElementById('contactPhone').value = '';
+                await selectAddressBook(currentAddressBook.name);
+                await loadAddressBooks(); // Refresh to update contact count
+            } else {
                 alert('Error adding contact');
             }
+        } catch (error) {
+            console.error('Error adding contact:', error);
+            alert('Error adding contact');
+        }
+    }
+
+    // Delete an address book
+    async function deleteAddressBook(name) {
+        if (!confirm(`Are you sure you want to delete "${name}"?`)) {
+            return;
         }
 
-        // Delete an address book
-        window.deleteAddressBook = async function(name) {
-            if (!confirm(`Are you sure you want to delete "${name}"?`)) {
-                return;
-            }
+        try {
+            const response = await fetch(`${API_BASE}/${name}`, {
+                method: 'DELETE'
+            });
 
-            try {
-                const response = await fetch(`${API_BASE}/${encodeURIComponent(name)}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok || response.status === 204) {
-                    currentAddressBook = null;
-                    document.getElementById('detailView').innerHTML = `
+            if (response.ok || response.status === 204) {
+                currentAddressBook = null;
+                document.getElementById('detailView').innerHTML = `
                         <div class="empty-state">
                             <h2>👈 Select an address book to view contacts</h2>
                             <p>Or create a new one to get started!</p>
                         </div>
                     `;
-                    await loadAddressBooks();
-                    alert('Address book deleted successfully!');
-                } else {
-                    alert('Error deleting address book');
-                }
-            } catch (error) {
-                console.error('Error deleting address book:', error);
+                await loadAddressBooks();
+                alert('Address book deleted successfully!');
+            } else {
                 alert('Error deleting address book');
             }
-        };
+        } catch (error) {
+            console.error('Error deleting address book:', error);
+            alert('Error deleting address book');
+        }
+    }
 
-        // Delete a contact
-        window.deleteContact = async function(bookName, phone) {
-            if (!confirm('Are you sure you want to delete this contact?')) {
-                return;
-            }
+    // Delete a contact
+    async function deleteContact(bookName, phone) {
+        if (!confirm('Are you sure you want to delete this contact?')) {
+            return;
+        }
 
-            try {
-                const response = await fetch(`${API_BASE}/${encodeURIComponent(bookName)}/contacts/${encodeURIComponent(phone)}`, {
-                    method: 'DELETE'
-                });
+        try {
+            const response = await fetch(`${API_BASE}/${bookName}/contacts/${phone}`, {
+                method: 'DELETE'
+            });
 
-                if (response.ok) {
-                    await selectAddressBook(bookName);
-                    await loadAddressBooks();
-                } else {
-                    alert('Error deleting contact');
-                }
-            } catch (error) {
-                console.error('Error deleting contact:', error);
+            if (response.ok) {
+                await selectAddressBook(bookName);
+                await loadAddressBooks(); // Refresh to update contact count
+            } else {
                 alert('Error deleting contact');
             }
-        };
-
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        } catch (error) {
+            console.error('Error deleting contact:', error);
+            alert('Error deleting contact');
         }
-    })();
+    }
 </script>
 </body>
 </html>
