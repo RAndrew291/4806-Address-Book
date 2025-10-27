@@ -2,8 +2,12 @@ package lab3_.lab3;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface AddressBookRepository extends CrudRepository<AddressBook, String> {
 
-    AddressBook findByName(String name);
+/**
+ * Interface for AddressBook CrudRepository
+ */
+public interface AddressBookRepository extends CrudRepository<lab3_.lab3.AddressBook, Long> {
 
+    lab3_.lab3.AddressBook findByName(String name);
+    lab3_.lab3.AddressBook findById(long id);
 }

@@ -1,5 +1,10 @@
 package lab3_.lab3;
 
+/*
+ *  AddressBook is a class that contains objects of class BuddyInfo into a
+ *  convenient ArrayList. This allows their information to be called easily.
+ */
+
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -8,63 +13,118 @@ import java.util.List;
 @Entity
 public class AddressBook {
 
-    // added EAGER fetch type to immediately load all associated BuddyInfo entities
-    // (previously only loaded when buddyInfo entities were accessed by which time the session was closed
-    // causing a LazyInitializationException
-    @OneToMany(mappedBy = "addressBook", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<BuddyInfo> buddies = new ArrayList<>();
 
     @Id
-    private String name;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String name = null;
+    @OneToMany(mappedBy = "addressBook", cascade = CascadeType.ALL)
+    private List<BuddyInfo> contacts = new ArrayList<>();
+    private int size;
 
+    /** Constructor for class AddressBook()
+     */
+    public AddressBook(String name) {
+        this.name = name;
+        size = 0;
+    }
+
+
+    /** Constructor for class AddressBook()
+     */
     public AddressBook() {
     }
 
-    public AddressBook(String name) {
+    /** Getter for addressbook ID
+     *
+     * @return addressbook id
+     */
+    public Long getId() {
+        return id;
+    }
+
+
+    /** Setter for addressbook name
+     *
+     * @param name of the address book
+     */
+    public void  setName(String name) {
         this.name = name;
     }
 
-    public void addBuddie(BuddyInfo buddy) {
-        buddies.add(buddy);
-        buddy.setAddressBook(this);
-    }
-
-    public void removeBuddie(BuddyInfo buddy) {
-        buddies.remove(buddy);
-        buddy.setAddressBook(null);
-    }
-
-    public void setBuddies(List<BuddyInfo> buddies) {
-        this.buddies = buddies;
-        for (BuddyInfo buddy : buddies) {
-            buddy.setAddressBook(this);
-        }
-    }
-
-    public List<BuddyInfo> getBuddies() {
-        return buddies;
-    }
-
+    /** Getter for addressbook name
+     *
+     * @return name of the address book
+     */
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+
+    /** Get the contacts list
+     *
+     */
+    public List<BuddyInfo> getContacts() {
+        return contacts;
+    }
+
+    /** addBuddy method adds a buddy to the array
+     * list created by the constructor
+     * @param buddy a BuddyInfo object
+     */
+    public void addBuddy(BuddyInfo buddy){
+        /* Adds a buddy to the contacts list */
+        if(buddy != null) {
+            contacts.add(buddy);
+            buddy.setAddressBook(this);
+        }
+        size = contacts.size();
+
+    }
+
+    /** removeBuddy method removes a buddy from the addressBook
+     *
+     * @param buddy a BuddyInfo object
+     */
+    public void removeBuddy(BuddyInfo buddy){
+        contacts.remove(buddy);
+        size = contacts.size();
+    }
+    /** printContacts provides a method to print all contacts in the addressBook.
+     *
+     */
+    public String organizeContacts(){
+        String contactsString = "";
+        for (BuddyInfo contact : this.contacts) {
+            if (contact.getName() != null) {
+                contactsString += "Name: " + contact.getName() + ", Phone: " + contact.getPhone() + "\n";
+            }
+        }
+        return contactsString;
+    }
+
+    public void printContacts(){
+        System.out.println("Contacts:\n" + organizeContacts());
+    }
+
+    /** Returns the number of contacts in the address book
+     *
+     * @return the size of the address book
+     */
+    public int getBookSize(){
+        int size = 0;
+        for (BuddyInfo contact : this.contacts) {
+            if (contact.getName() != null) {
+                size += 1;
+            }
+        }
+        return size;
     }
 
     @Override
     public String toString() {
-        return "AddressBook{" + "name=" + name + ", buddies=" + buddies + '}';
-    }
-
-    public static void main(String[] args) {
-        AddressBook ab = new AddressBook("My Address Book");
-        ab.addBuddie(new BuddyInfo("Cameron", "911"));
-        ab.addBuddie(new BuddyInfo("Clarke", "9028273050"));
-        System.out.println(ab.getBuddies());
+        String overview = "";
+        overview += "AddressBook[Name: " + name + ", Size: " + size +", ID: " + id + "]\n";
+        return overview;
     }
 }
-
-// java -cp target/lab1-1.0-SNAPSHOT.jar intro.AddressBook
-
