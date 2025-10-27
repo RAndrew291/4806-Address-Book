@@ -19,13 +19,14 @@ public class AddressBookController {
 
     //Display all Address Books
     @GetMapping
-    public Iterable<lab3_.lab3.AddressBook> findAllAddressBooks() {
+    public Iterable<AddressBook> findAllAddressBooks() {
         return addressBookRepository.findAll();
     }
+
     //Get a specific address book by name
     @GetMapping("/{name}")
-    public ResponseEntity<lab3_.lab3.AddressBook> findAddressBookByName(@PathVariable String name) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+    public ResponseEntity<AddressBook> findAddressBookByName(@PathVariable String name) {
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook == null) {
             return ResponseEntity.notFound().build();
         }
@@ -34,14 +35,14 @@ public class AddressBookController {
 
     //Create a new address book
     @PostMapping
-    public ResponseEntity<lab3_.lab3.AddressBook> createAddressBook(@RequestBody lab3_.lab3.AddressBook addressBook) {
-        lab3_.lab3.AddressBook savedAddressBook = addressBookRepository.save(addressBook);
+    public ResponseEntity<AddressBook> createAddressBook(@RequestBody AddressBook addressBook) {
+        AddressBook savedAddressBook = addressBookRepository.save(addressBook);
         return ResponseEntity.ok(savedAddressBook);
     }
 
     @DeleteMapping("/{name}")
     public ResponseEntity<Void> deleteAddressBook(@PathVariable String name) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook != null) {
             addressBookRepository.delete(addressBook);
         }
@@ -50,20 +51,20 @@ public class AddressBookController {
 
     //Add buddy to address book
     @PostMapping("/{name}/contacts")
-    public ResponseEntity<lab3_.lab3.AddressBook> addBuddy(@PathVariable String name, @RequestBody BuddyInfo buddyInfo) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+    public ResponseEntity<AddressBook> addBuddy(@PathVariable String name, @RequestBody BuddyInfo buddyInfo) {
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook == null) {
             return ResponseEntity.notFound().build();
         }
         addressBook.addBuddy(buddyInfo);
-        lab3_.lab3.AddressBook savedAddressBook = addressBookRepository.save(addressBook);
+        AddressBook savedAddressBook = addressBookRepository.save(addressBook);
         return ResponseEntity.ok(savedAddressBook);
     }
 
     //remove specified buddy from specified book
     @DeleteMapping("/{name}/contacts/{buddyPhone}")
-    public ResponseEntity<lab3_.lab3.AddressBook> deleteBuddy(@PathVariable String name, @PathVariable String buddyPhone) {
-        lab3_.lab3.AddressBook addressbook = addressBookRepository.findByName(name);
+    public ResponseEntity<AddressBook> deleteBuddy(@PathVariable String name, @PathVariable String buddyPhone) {
+        AddressBook addressbook = addressBookRepository.findByName(name);
         if (addressbook == null) {
             return ResponseEntity.notFound().build();
         }
@@ -73,7 +74,7 @@ public class AddressBookController {
         }
         addressbook.removeBuddy(buddy);
         buddyRepository.delete(buddy);
-        lab3_.lab3.AddressBook saved = addressBookRepository.save(addressbook);
+        AddressBook saved = addressBookRepository.save(addressbook);
         return ResponseEntity.ok(saved);
     }
 
