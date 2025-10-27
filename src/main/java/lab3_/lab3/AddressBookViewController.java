@@ -25,7 +25,7 @@ public class AddressBookViewController {
     @GetMapping("/addressBooks")
     public String viewAllAddressBooks(Model model) {
         model.addAttribute("addressBooks", addressBookRepository.findAll());
-        return "addressBooks";
+        return "addressBookDetail";
     }
 
     // Show form to create a new address book

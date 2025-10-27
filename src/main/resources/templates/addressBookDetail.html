@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Address Books</title>
+</head>
+<body>
+<h1>Address Books</h1>
+<div th:each="addressBook : ${addressBooks}">
+    <h2><a th:href="@{/view/addressBooks/{name}(name=${addressBook.name})}"
+           th:text="${addressBook.name}">Name</a></h2>
+    <p th:text="${#lists.size(addressBook.buddies)} + ' buddies'">0 buddies</p>
+</div>
+</body>
+</html>

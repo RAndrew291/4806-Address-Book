@@ -1,0 +1,51 @@
+### Create an address book
+POST randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks
+Content-Type: application/json
+
+{
+  "name": "AddressBook"
+}
+
+### Get all address books
+GET randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/view/addressBooks
+
+### Add a buddy to AddressBook
+POST randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks/AddressBook/contacts
+Content-Type: application/json
+
+{
+  "name": "Buddy1",
+  "phone": "123"
+}
+
+### Create another address book
+POST randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks
+Content-Type: application/json
+
+{
+  "name": "AddressBook2"
+}
+
+### Add buddy to AddressBook2
+POST randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks/AddressBook2/contacts
+Content-Type: application/json
+
+{
+  "name": "Buddy2",
+  "phone": "234"
+}
+
+### Get all address books
+GET randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/view/addressBooks
+
+### Delete buddy 1 from AddressBook
+DELETE randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks/AddressBook/contacts/123
+
+### Get specific address book (AddressBook)
+GET randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/view/addressBooks/AddressBook
+
+### Delete specified address book (AddressBook)
+DELETE randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/addressBooks/AddressBook
+
+### Get all address books
+GET randrew-addressbook-4806-gcgvhwgfgbcqezdd.canadacentral-01.azurewebsites.net/view/addressBooks
