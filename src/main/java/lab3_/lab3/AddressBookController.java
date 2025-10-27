@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/addressBooks")
+@RequestMapping("/api/addressBooks")
 public class AddressBookController {
 
     @Autowired
