@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class AddressBookViewController {
 
     @Autowired
-    private lab3_.lab3.AddressBookRepository addressBookRepository;
+    private AddressBookRepository addressBookRepository;
 
     @Autowired
     private BuddyRepository buddyRepository;
@@ -21,23 +21,23 @@ public class AddressBookViewController {
         return "addressBookSPA";
     }
 
-    // Display all address books
+    // Display all address books - FIXED: Changed return value
     @GetMapping("/addressBooks")
     public String viewAllAddressBooks(Model model) {
         model.addAttribute("addressBooks", addressBookRepository.findAll());
-        return "addressBookDetail";
+        return "addressBooks";
     }
 
     // Show form to create a new address book
     @GetMapping("/addressBooks/new")
     public String showCreateAddressBookForm(Model model) {
-        model.addAttribute("addressBook", new lab3_.lab3.AddressBook());
+        model.addAttribute("addressBook", new AddressBook());
         return "createAddressBook";
     }
 
     // Handle creating a new address book
     @PostMapping("/addressBooks/create")
-    public String createAddressBook(@ModelAttribute lab3_.lab3.AddressBook addressBook) {
+    public String createAddressBook(@ModelAttribute AddressBook addressBook) {
         addressBookRepository.save(addressBook);
         return "redirect:/view/addressBooks";
     }
@@ -45,7 +45,7 @@ public class AddressBookViewController {
     // View a specific address book with its buddies
     @GetMapping("/addressBooks/{name}")
     public String viewAddressBook(@PathVariable String name, Model model) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook == null) {
             return "redirect:/view/addressBooks";
         }
@@ -57,7 +57,7 @@ public class AddressBookViewController {
     // Show form to add a buddy to an address book
     @GetMapping("/addressBooks/{name}/addBuddy")
     public String showAddBuddyForm(@PathVariable String name, Model model) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook == null) {
             return "redirect:/view/addressBooks";
         }
@@ -69,7 +69,7 @@ public class AddressBookViewController {
     // Handle adding a buddy to an address book
     @PostMapping("/addressBooks/{name}/addBuddy")
     public String addBuddy(@PathVariable String name, @ModelAttribute BuddyInfo buddy) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook != null) {
             addressBook.addBuddy(buddy);
             addressBookRepository.save(addressBook);
@@ -80,7 +80,7 @@ public class AddressBookViewController {
     // Delete an address book
     @PostMapping("/addressBooks/{name}/delete")
     public String deleteAddressBook(@PathVariable String name) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook != null) {
             addressBookRepository.delete(addressBook);
         }
@@ -90,7 +90,7 @@ public class AddressBookViewController {
     // Delete a buddy from an address book
     @PostMapping("/addressBooks/{name}/deleteBuddy/{phone}")
     public String deleteBuddy(@PathVariable String name, @PathVariable String phone) {
-        lab3_.lab3.AddressBook addressBook = addressBookRepository.findByName(name);
+        AddressBook addressBook = addressBookRepository.findByName(name);
         if (addressBook != null) {
             BuddyInfo buddy = buddyRepository.findByPhone(phone);
             if (buddy != null) {
@@ -100,5 +100,11 @@ public class AddressBookViewController {
             }
         }
         return "redirect:/view/addressBooks/" + name;
+    }
+
+    // NEW: Add a home/landing page
+    @GetMapping({"", "/"})
+    public String home() {
+        return "redirect:/view/addressBooks";
     }
 }
