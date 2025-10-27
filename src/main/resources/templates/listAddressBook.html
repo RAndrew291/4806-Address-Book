@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"/><title>Address Book List</title></head>
+<body>
+<h1>Address Books</h1>
+<div th:if="${books == null}">No books.</div>
+<ul th:if="${books != null}">
+    <li th:each="book : ${books}">
+        <strong th:text="${book.name}">Book name</strong>
+        (id: <span th:text="${book.id}">id</span>)
+        <ul>
+            <li th:each="b : ${book.buddies}">
+                <span th:text="${b.name}">name</span> —
+                <span th:text="${b.phone}">phone</span>
+            </li>
+        </ul>
+    </li>
+</ul>
+<a href="/">Back</a>
+</body>
+</html>
